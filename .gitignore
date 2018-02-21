@@ -47,7 +47,9 @@ captures/
 .idea/vcs.xml
 .idea/copyright/profiles_settings.xml
 
+# Gradle
 gradle/wrapper/gradle-wrapper.jar
+gradle/wrapper/gradle-wrapper.properties
 
 # Keystore files
 *.jks
