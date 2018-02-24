@@ -34,8 +34,6 @@ class RadioFragment : Studio21Fragment() {
 
         butter(view)
 
-//        volumeSeekBar.setPadding(0, 0, 0, 0)
-
         return view
     }
 

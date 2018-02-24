@@ -65,28 +65,6 @@ public class RadioActivity extends AppCompatActivity {
 
         final String url = "http://icecast-studio21.cdnvideo.ru/S21_1";
         Uri uri = Uri.parse(url);
-//        MediaPlayer mediaPlayer = new MediaPlayer();
-//        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-//        try {
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                mediaPlayer.setOnTimedMetaDataAvailableListener(new MediaPlayer.OnTimedMetaDataAvailableListener() {
-//                    @Override
-//                    public void onTimedMetaDataAvailable(MediaPlayer mp, TimedMetaData data) {
-//                        Log.d("trace", "Data: " + data);
-//                    }
-//                });
-//            }
-//            mediaPlayer.setDataSource("http://icecast-studio21.cdnvideo.ru/S21_1");
-//            mediaPlayer.prepare(); // might take long! (for buffering, etc)
-//
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        mediaPlayer.start();
-
-//        prepareExoPlayerFromFileUri(Uri.parse(url));
-
 
         DataSource.Factory dataSourceFactory;
         ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
@@ -144,34 +122,34 @@ public class RadioActivity extends AppCompatActivity {
         player.prepare(mediaSource);
         player.addListener(eventListener);
 
-        player.addMetadataOutput(new MetadataOutput() {
-            @Override
-            public void onMetadata(Metadata metadata) {
-                Log.d("meta_trace", "onMetadata " + metadata);
-                Toast.makeText(RadioActivity.this, "onMetadata", Toast.LENGTH_SHORT).show();
-            }
-        });
-        player.addTextOutput(new TextOutput() {
-            @Override
-            public void onCues(List<Cue> cues) {
-                Log.d("meta_trace", "onMetadata " + cues);
-                Toast.makeText(RadioActivity.this, "onMetadata", Toast.LENGTH_SHORT).show();
-            }
-        });
-        player.setTextOutput(new TextOutput() {
-            @Override
-            public void onCues(List<Cue> cues) {
-                Log.d("meta_trace", "onMetadata " + cues);
-                Toast.makeText(RadioActivity.this, "onMetadata", Toast.LENGTH_SHORT).show();
-            }
-        });
-        player.setMetadataOutput(new MetadataOutput() {
-            @Override
-            public void onMetadata(Metadata metadata) {
-                Log.d("meta_trace", "onMetadata " + metadata);
-                Toast.makeText(RadioActivity.this, "onMetadata", Toast.LENGTH_SHORT).show();
-            }
-        });
+//        player.addMetadataOutput(new MetadataOutput() {
+//            @Override
+//            public void onMetadata(Metadata metadata) {
+//                Log.d("meta_trace", "onMetadata " + metadata);
+//                Toast.makeText(RadioActivity.this, "onMetadata", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+//        player.addTextOutput(new TextOutput() {
+//            @Override
+//            public void onCues(List<Cue> cues) {
+//                Log.d("meta_trace", "onMetadata " + cues);
+//                Toast.makeText(RadioActivity.this, "onMetadata", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+//        player.setTextOutput(new TextOutput() {
+//            @Override
+//            public void onCues(List<Cue> cues) {
+//                Log.d("meta_trace", "onMetadata " + cues);
+//                Toast.makeText(RadioActivity.this, "onMetadata", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+//        player.setMetadataOutput(new MetadataOutput() {
+//            @Override
+//            public void onMetadata(Metadata metadata) {
+//                Log.d("meta_trace", "onMetadata " + metadata);
+//                Toast.makeText(RadioActivity.this, "onMetadata", Toast.LENGTH_SHORT).show();
+//            }
+//        });
 
 
         player.setPlayWhenReady(true);

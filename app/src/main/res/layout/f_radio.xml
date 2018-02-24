@@ -67,6 +67,6 @@
         android:layout_marginTop="16dp"
         android:background="?selectableItemBackgroundBorderless"
         android:scaleType="centerInside"
-        app:srcCompat="@drawable/ic_play" />
+        app:srcCompat="@drawable/ic_play_accent_big" />
 
 </LinearLayout>
