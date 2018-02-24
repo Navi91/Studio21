@@ -1,4 +1,4 @@
-package com.studio21.android;
+package com.studio21.android.api;
 
 import android.net.Uri;
 import android.util.Log;

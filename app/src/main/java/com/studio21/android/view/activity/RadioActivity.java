@@ -37,8 +37,8 @@ import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.FileDataSource;
 import com.google.android.exoplayer2.util.Util;
-import com.studio21.android.IcyDataSourceFactory;
-import com.studio21.android.PlayerCallback;
+import com.studio21.android.api.IcyDataSourceFactory;
+import com.studio21.android.api.PlayerCallback;
 import com.studio21.android.R;
 import com.studio21.android.view.fragment.RadioFragment;
 
