@@ -5,20 +5,24 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SeekBar
+import butterknife.BindView
+import com.google.android.exoplayer2.SimpleExoPlayer
 
 import com.studio21.android.R
+import com.studio21.android.view.Studio21Fragment
 
-class RadioFragment : Fragment() {
+class RadioFragment : Studio21Fragment() {
+
+    @BindView(R.id.volume)
+    lateinit var volumeSeekBar: SeekBar
+
+    lateinit var player: SimpleExoPlayer
 
     companion object {
-        private val ARG_PARAM1 = "param1"
-        private val ARG_PARAM2 = "param2"
-
-        fun newInstance(param1: String, param2: String): RadioFragment {
+        fun newInstance(): RadioFragment {
             val fragment = RadioFragment()
             val args = Bundle()
-            args.putString(ARG_PARAM1, param1)
-            args.putString(ARG_PARAM2, param2)
             fragment.arguments = args
             return fragment
         }
@@ -26,6 +30,18 @@ class RadioFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.f_radio, container, false)
+        val view = inflater.inflate(R.layout.f_radio, container, false)
+
+        butter(view)
+
+//        volumeSeekBar.setPadding(0, 0, 0, 0)
+
+        return view
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
+
     }
 }

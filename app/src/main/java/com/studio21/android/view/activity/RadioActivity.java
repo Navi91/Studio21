@@ -1,12 +1,8 @@
-package com.studio21.android;
+package com.studio21.android.view.activity;
 
 import android.media.AudioManager;
 import android.media.AudioTrack;
-import android.media.MediaPlayer;
-import android.media.TimedMetaData;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,7 +21,6 @@ import com.google.android.exoplayer2.extractor.ExtractorsFactory;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataOutput;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.source.LoopingMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
@@ -36,22 +31,18 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
-import com.google.android.exoplayer2.upstream.Allocator;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSpec;
-import com.google.android.exoplayer2.upstream.DefaultAllocator;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.FileDataSource;
-import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.Util;
+import com.studio21.android.IcyDataSourceFactory;
+import com.studio21.android.PlayerCallback;
+import com.studio21.android.R;
+import com.studio21.android.view.fragment.RadioFragment;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
-import java.util.Map;
 
 public class RadioActivity extends AppCompatActivity {
     private static final int BUFFER_SEGMENT_SIZE = 64 * 1024;
@@ -61,13 +52,16 @@ public class RadioActivity extends AppCompatActivity {
 
     SimpleExoPlayer player;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
         setContentView(R.layout.a_radio);
         Log.d("trace", "Create");
 
-        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        addFragment();
 
         final String url = "http://icecast-studio21.cdnvideo.ru/S21_1";
         Uri uri = Uri.parse(url);
@@ -112,7 +106,7 @@ public class RadioActivity extends AppCompatActivity {
             @Override
             public void playerStarted() {
                 Log.d("meta_trace", "playerStarted");
-                Toast.makeText(RadioActivity.this, "onMetadata", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(RadioActivity.this, "onMetadata", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -133,7 +127,7 @@ public class RadioActivity extends AppCompatActivity {
             @Override
             public void playerMetadata(String key, String value) {
                 Log.d("meta_trace", "playerMetadata " + value);
-                Toast.makeText(RadioActivity.this, "onMetadata", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(RadioActivity.this, "onMetadata", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -309,5 +303,9 @@ public class RadioActivity extends AppCompatActivity {
 
         exoPlayer.prepare(audioSource);
         exoPlayer.setPlayWhenReady(true);
+    }
+
+    private void addFragment() {
+        getSupportFragmentManager().beginTransaction().add( R.id.container, RadioFragment.Companion.newInstance()).commit();
     }
 }
