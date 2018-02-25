@@ -19,7 +19,7 @@ import com.google.android.exoplayer2.upstream.BandwidthMeter
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.util.Util
-import com.studio21.android.api.IcyDataSourceFactory
+import com.studio21.android.api.icy.IcyDataSourceFactory
 import com.studio21.android.util.Logger
 
 /**

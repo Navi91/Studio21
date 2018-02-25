@@ -70,8 +70,8 @@ class RadioNotificationManager(val service: RadioService) : BroadcastReceiver() 
         Logger.log(TAG, "startNotification started: $started")
 
         if (!started) {
-            metadata = controller?.getMetadata()
-            playbackState = controller?.getPlaybackState()
+            metadata = controller?.metadata
+            playbackState = controller?.playbackState
 
             // The notification must be updated after setting started to true
             val notification = createNotification()
@@ -222,17 +222,6 @@ class RadioNotificationManager(val service: RadioService) : BroadcastReceiver() 
                 .setContentTitle(description.title)
                 .setContentText(description.subtitle)
                 .setLargeIcon(art)
-
-//        if (mController != null && mController.getExtras() != null) {
-//            val castName = mController.getExtras().getString(MusicService.EXTRA_CONNECTED_CAST)
-//            if (castName != null) {
-//                val castInfo = mService.getResources()
-//                        .getString(R.string.casting_to_device, castName)
-//                notificationBuilder.setSubText(castInfo)
-//                notificationBuilder.addAction(R.drawable.ic_close_black_24dp,
-//                        mService.getString(R.string.stop_casting), mStopCastIntent)
-//            }
-//        }
 
         setNotificationPlaybackState(notificationBuilder)
         if (fetchArtUrl != null) {

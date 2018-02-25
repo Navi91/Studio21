@@ -53,8 +53,7 @@ class PlaybackManager(val playback: Playback, private val serviceCallback: Playb
         updatePlaybackState(withError)
     }
 
-    fun updatePlaybackMetadata(key: String?, value: String?) {
-        //Bundle[{StreamTitle=Баста - Папа what's up}]
+    private fun updatePlaybackMetadata(key: String?, value: String?) {
         val split = value?.split(" - ") ?: return
 
         try {

@@ -7,7 +7,7 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Timeline
 import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
-import com.studio21.android.api.PlayerCallback
+import com.studio21.android.api.icy.PlayerCallback
 
 /**
  * Created by Dmitriy on 24.02.2018.
