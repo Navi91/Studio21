@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.RemoteException
 import android.support.annotation.RequiresApi
@@ -20,6 +21,9 @@ import android.support.v4.media.app.NotificationCompat.MediaStyle
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import com.squareup.picasso.Callback
+import com.squareup.picasso.Picasso
+import com.squareup.picasso.Target
 import com.studio21.android.R
 import com.studio21.android.util.Logger
 import com.studio21.android.view.activity.RadioActivity
@@ -260,6 +264,19 @@ class RadioNotificationManager(val service: RadioService) : BroadcastReceiver() 
 
     private fun fetchBitmapFromURLAsync(bitmapUrl: String,
                                         builder: NotificationCompat.Builder) {
+        Picasso.with(service).load("").into(object : Target {
+            override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
+
+            }
+
+            override fun onBitmapFailed(errorDrawable: Drawable?) {
+
+            }
+
+            override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
+
+            }
+        })
         // TODO load img
 //        AlbumArtCache.getInstance().fetch(bitmapUrl, object : AlbumArtCache.FetchListener() {
 //            fun onFetched(artUrl: String, bitmap: Bitmap, icon: Bitmap) {

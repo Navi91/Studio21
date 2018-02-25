@@ -1,5 +1,6 @@
 package com.studio21.android.view.fragment
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.support.v4.content.ContextCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -16,6 +17,8 @@ import android.widget.Toast
 import butterknife.BindView
 import butterknife.OnClick
 import com.studio21.android.R
+import com.studio21.android.api.ArtLoadRequest
+import com.studio21.android.api.ArtLoader
 import com.studio21.android.view.Studio21Fragment
 
 class RadioFragment : Studio21Fragment() {
@@ -28,8 +31,11 @@ class RadioFragment : Studio21Fragment() {
     lateinit var titleTextView: TextView
     @BindView(R.id.subtitle)
     lateinit var subtitleTextView: TextView
+    @BindView(R.id.art)
+    lateinit var artImageView: ImageView
 
     private var artUrl: String? = null
+    private lateinit var artLoader: ArtLoader
 
     private val callback = object : MediaControllerCompat.Callback() {
         override fun onPlaybackStateChanged(state: PlaybackStateCompat) {
@@ -48,6 +54,12 @@ class RadioFragment : Studio21Fragment() {
             fragment.arguments = args
             return fragment
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        artLoader = ArtLoader(activity!!)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -73,6 +85,12 @@ class RadioFragment : Studio21Fragment() {
 
         val controller = MediaControllerCompat.getMediaController(activity!!)
         controller?.unregisterCallback(callback)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+
+        unsubscribeLoadRequest()
     }
 
     @OnClick(R.id.action)
@@ -122,23 +140,41 @@ class RadioFragment : Studio21Fragment() {
         }
     }
 
+    private var loadImageRequest: ArtLoadRequest? = null
+
+    private fun subscribeLoadRequest() {
+        loadImageRequest?.subscribe()
+    }
+
+    private fun unsubscribeLoadRequest() {
+        loadImageRequest?.unsubscribe()
+    }
+
     private fun onMetadataChanged(metadata: MediaMetadataCompat?) {
+
         if (activity == null || metadata == null) {
             return
         }
 
-        titleTextView.text = metadata.description.title
-        subtitleTextView.text = metadata.description.subtitle
+        val author = metadata.description.title
+        val song = metadata.description.subtitle
 
-        var artUrl: String? = null
-        if (metadata.description.iconUri != null) {
-            artUrl = metadata.description.iconUri!!.toString()
-        }
+        if (TextUtils.isEmpty(author) || TextUtils.isEmpty(song)) return
+        unsubscribeLoadRequest()
 
-        if (!TextUtils.equals(artUrl, this.artUrl)) {
-            this.artUrl = artUrl
+        titleTextView.text = author
+        subtitleTextView.text = song
 
-        }
+        loadImageRequest = artLoader.request(author.toString(), song.toString(), object : ArtLoadRequest.LoadCallback {
+            override fun onLoad(bitmap: Bitmap?) {
+                if (bitmap != null) {
+                    activity?.runOnUiThread({
+                        artImageView.setImageBitmap(bitmap)
+                    })
+                }
+            }
+        })
+        subscribeLoadRequest()
     }
 
     private fun playMedia() {

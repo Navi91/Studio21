@@ -15,9 +15,10 @@
         app:srcCompat="@drawable/ic_logo" />
 
     <ImageView
-        android:id="@+id/preview"
+        android:id="@+id/art"
         android:layout_width="280dp"
         android:layout_height="280dp"
+        android:scaleType="fitCenter"
         android:layout_marginTop="16dp"
         android:background="#cccccc" />
 

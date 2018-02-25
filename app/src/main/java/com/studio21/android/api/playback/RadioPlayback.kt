@@ -20,23 +20,28 @@ import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.util.Util
 import com.studio21.android.api.icy.IcyDataSourceFactory
+import com.studio21.android.api.radio.RadioService
 import com.studio21.android.util.Logger
 
 /**
  * Created by Dmitriy on 24.02.2018.
  */
-class RadioPlayback(val context: Context, val url: String) : Playback {
+class RadioPlayback(private val context: Context, url: String) : Playback {
 
     private val TAG = "radio_playback"
 
     private val mAudioNoisyReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+
             if (AudioManager.ACTION_AUDIO_BECOMING_NOISY == intent.action) {
+                Logger.log(TAG, "onNoisyReceived")
+
                 if (isPlaying) {
-//                    val i = Intent(context, MusicService::class.java)
-//                    i.action = MusicService.ACTION_CMD
-//                    i.putExtra(MusicService.CMD_NAME, MusicService.CMD_PAUSE)
-//                    mContext.startService(i)
+                    val i = Intent(context, RadioService::class.java)
+                    i.action = RadioService.ACTION_CMD
+                    i.putExtra(RadioService.CMD_NAME, RadioService.CMD_PAUSE)
+
+                    context.startService(i)
                     pause()
                 }
             }
@@ -135,6 +140,7 @@ class RadioPlayback(val context: Context, val url: String) : Playback {
 
     private fun setPlayWhenReady(play: Boolean) {
         Logger.log(TAG, "setPlayWhenReady $play")
+        if (play) exoPlayer?.seekToDefaultPosition()
         exoPlayer?.playWhenReady = play
     }
 
