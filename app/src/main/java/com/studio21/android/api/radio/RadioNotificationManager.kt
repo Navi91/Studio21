@@ -21,12 +21,15 @@ import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import com.studio21.android.R
+import com.studio21.android.util.Logger
 import com.studio21.android.view.activity.RadioActivity
 
 /**
  * Created by Dmitriy on 25.02.2018.
  */
 class RadioNotificationManager(val service: RadioService) : BroadcastReceiver() {
+
+    private val TAG = "radio_notification_manager"
 
     private var sessionToken: MediaSessionCompat.Token? = null
     private var controller: MediaControllerCompat? = null
@@ -59,10 +62,13 @@ class RadioNotificationManager(val service: RadioService) : BroadcastReceiver() 
     }
 
     init {
+        updateSessionToken()
         notificationManager.cancelAll()
     }
 
     fun startNotification() {
+        Logger.log(TAG, "startNotification started: $started")
+
         if (!started) {
             metadata = controller?.getMetadata()
             playbackState = controller?.getPlaybackState()
@@ -98,12 +104,19 @@ class RadioNotificationManager(val service: RadioService) : BroadcastReceiver() 
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
+        val action = intent?.action
+        Logger.log(TAG, "onReceive action $action")
 
+        when (action) {
+            ACTION_PAUSE -> transportControls?.pause()
+            ACTION_PLAY -> transportControls?.play()
+            else -> Logger.log(TAG, "Unknown intent ignored. Action=$action")
+        }
     }
 
     private fun createContentIntent(description: MediaDescriptionCompat?): PendingIntent {
         val openUI = Intent(service, RadioActivity::class.java)
-        openUI.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        openUI.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
 //        openUI.putExtra(MusicPlayerActivity.EXTRA_START_FULLSCREEN, true)
 
         if (description != null) {
@@ -168,9 +181,7 @@ class RadioNotificationManager(val service: RadioService) : BroadcastReceiver() 
             return null
         }
 
-        val description = metadata?.description
-
-        if (description == null) return null
+        val description = metadata?.description ?: return null
 
         var fetchArtUrl: String? = null
         var art: Bitmap? = null

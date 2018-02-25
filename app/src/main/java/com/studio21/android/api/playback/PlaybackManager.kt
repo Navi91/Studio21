@@ -4,15 +4,22 @@ import android.os.SystemClock
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import com.studio21.android.util.Logger
 
 /**
  * Created by Dmitriy on 24.02.2018.
  */
-class PlaybackManager(val playback: Playback, val serviceCallback: PlaybackServiceCallback) : Playback.Callback {
+class PlaybackManager(val playback: Playback, private val serviceCallback: PlaybackServiceCallback) : Playback.Callback {
+
+    val TAG = "playback_manager"
+
+    init {
+        playback.setCallback(this)
+    }
 
     val mediaSessionCallback: MediaSessionCompat.Callback = object : MediaSessionCompat.Callback() {
         override fun onPlay() {
-           handlePlayRequest()
+            handlePlayRequest()
         }
 
         override fun onSeekTo(pos: Long) {
@@ -47,15 +54,30 @@ class PlaybackManager(val playback: Playback, val serviceCallback: PlaybackServi
     }
 
     fun updatePlaybackMetadata(key: String?, value: String?) {
-        serviceCallback.onPlaybackMetadataUpdated(MediaMetadataCompat.Builder().putString(key, value).build())
+        //Bundle[{StreamTitle=Баста - Папа what's up}]
+        val split = value?.split(" - ") ?: return
+
+        try {
+            val author = split[0]
+            val description = split[1]
+            val metadata = MediaMetadataCompat.Builder()
+                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, author)
+                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, description)
+                    .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, value)
+                    .build()
+            serviceCallback.onPlaybackMetadataUpdated(metadata)
+        } catch (e: IndexOutOfBoundsException) {
+            e.printStackTrace()
+        }
     }
 
     fun updatePlaybackState(error: String?) {
+        Logger.log(TAG, "updatePlaybackState $error")
+
         var position = PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN
         if (playback.isConnected) {
             position = playback.currentStreamPosition
         }
-
 
         val stateBuilder = PlaybackStateCompat.Builder()
                 .setActions(getAvailableActions())

@@ -21,13 +21,14 @@ public class IcyDataSource implements DataSource {
 
     private HttpURLConnection connection;
     private InputStream inputStream;
-    boolean metadataEnabled = true;
+    private boolean metadataEnabled = true;
 
     public IcyDataSource(final PlayerCallback playerCallback) {
         this.playerCallback = playerCallback;
     }
 
-    @Override public long open(final DataSpec dataSpec) throws IOException {
+    @Override
+    public long open(final DataSpec dataSpec) throws IOException {
         Log.i(TAG, "open[" + dataSpec.position + "-" + dataSpec.length);
         URL url = new URL(dataSpec.uri.toString());
         connection = (HttpURLConnection) url.openConnection();
@@ -43,16 +44,19 @@ public class IcyDataSource implements DataSource {
         return dataSpec.length;
     }
 
-    @Override public int read(final byte[] buffer, final int offset, final int readLength) throws
+    @Override
+    public int read(final byte[] buffer, final int offset, final int readLength) throws
             IOException {
         return inputStream.read(buffer, offset, readLength);
     }
 
-    @Override public Uri getUri() {
+    @Override
+    public Uri getUri() {
         return connection == null ? null : Uri.parse(connection.getURL().toString());
     }
 
-    @Override public void close() throws IOException {
+    @Override
+    public void close() throws IOException {
         try {
             if (inputStream != null) {
                 try {
@@ -71,29 +75,26 @@ public class IcyDataSource implements DataSource {
      * Gets the input stream from the connection.
      * Actually returns the underlying stream or IcyInputStream.
      */
-    protected InputStream getInputStream( HttpURLConnection conn ) throws Exception {
-        String smetaint = conn.getHeaderField( "icy-metaint" );
+    protected InputStream getInputStream(HttpURLConnection conn) throws Exception {
+        String smetaint = conn.getHeaderField("icy-metaint");
         InputStream ret = conn.getInputStream();
 
         if (!metadataEnabled) {
-            Log.i( TAG, "Metadata not enabled" );
-        }
-        else if (smetaint != null) {
+            Log.i(TAG, "Metadata not enabled");
+        } else if (smetaint != null) {
             int period = -1;
             try {
-                period = Integer.parseInt( smetaint );
-            }
-            catch (Exception e) {
-                Log.e( TAG, "The icy-metaint '" + smetaint + "' cannot be parsed: '" + e );
+                period = Integer.parseInt(smetaint);
+            } catch (Exception e) {
+                Log.e(TAG, "The icy-metaint '" + smetaint + "' cannot be parsed: '" + e);
             }
 
             if (period > 0) {
-                Log.i( TAG, "The dynamic metainfo is sent every " + period + " bytes" );
+                Log.i(TAG, "The dynamic metainfo is sent every " + period + " bytes");
 
-                ret = new IcyInputStream(ret, period, playerCallback, null );
+                ret = new IcyInputStream(ret, period, playerCallback, null);
             }
-        }
-        else Log.i( TAG, "This stream does not provide dynamic metainfo" );
+        } else Log.i(TAG, "This stream does not provide dynamic metainfo");
 
         return ret;
     }

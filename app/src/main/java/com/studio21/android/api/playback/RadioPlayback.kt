@@ -5,10 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
-import android.media.AudioTrack
 import android.net.Uri
 import android.support.v4.media.session.PlaybackStateCompat
 import com.google.android.exoplayer2.*
+import com.google.android.exoplayer2.C.CONTENT_TYPE_MUSIC
+import com.google.android.exoplayer2.C.USAGE_MEDIA
+import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
 import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
@@ -18,12 +20,14 @@ import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.util.Util
 import com.studio21.android.api.IcyDataSourceFactory
-import com.studio21.android.api.PlayerCallback
+import com.studio21.android.util.Logger
 
 /**
  * Created by Dmitriy on 24.02.2018.
  */
 class RadioPlayback(val context: Context, val url: String) : Playback {
+
+    private val TAG = "radio_playback"
 
     private val mAudioNoisyReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -41,10 +45,14 @@ class RadioPlayback(val context: Context, val url: String) : Playback {
 
     private val playerCallback: RadioPlayerCallback = object : RadioPlayerCallback() {
         override fun playerMetadata(key: String?, value: String?) {
+            Logger.log(TAG, "playerMetadata key: $key value: $value")
+
             callback?.onMetadata(key, value)
         }
 
         override fun onPlayerError(error: ExoPlaybackException?) {
+            Logger.log(TAG, "onPlayerError error: $error")
+
             val what: String?
             when (error?.type) {
                 ExoPlaybackException.TYPE_SOURCE -> what = error.getSourceException().message
@@ -54,12 +62,17 @@ class RadioPlayback(val context: Context, val url: String) : Playback {
             }
 
             callback?.onError("ExoPlayer error " + what)
+
+            throw error!!.sourceException
         }
 
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+            Logger.log(TAG, "onPlayerStateChanged play: $playWhenReady state: $playbackState")
+
             when (playbackState) {
-                ExoPlayer.STATE_IDLE, ExoPlayer.STATE_BUFFERING, ExoPlayer.STATE_READY -> callback?.onPlaybackStatusChanged(state)
+//                ExoPlayer.STATE_IDLE, ExoPlayer.STATE_BUFFERING, ExoPlayer.STATE_READY -> callback?.onPlaybackStatusChanged(state)
                 ExoPlayer.STATE_ENDED -> callback?.onCompletion()
+                else -> callback?.onPlaybackStatusChanged(state)
             }
         }
     }
@@ -94,15 +107,13 @@ class RadioPlayback(val context: Context, val url: String) : Playback {
         private val AUDIO_FOCUSED = 2
     }
 
-    init {
-        exoPlayer = ExoPlayerFactory.newSimpleInstance(context, trackSelector, loadControl)
-        exoPlayer?.addListener(playerCallback)
-    }
-
     override fun start() {
     }
 
     override fun stop(notifyListeners: Boolean) {
+        giveUpAudioFocus()
+        unregisterAudioNoisyReceiver()
+        releaseResources(true)
     }
 
     override fun setState(state: Int) {
@@ -122,6 +133,11 @@ class RadioPlayback(val context: Context, val url: String) : Playback {
         }
     }
 
+    private fun setPlayWhenReady(play: Boolean) {
+        Logger.log(TAG, "setPlayWhenReady $play")
+        exoPlayer?.playWhenReady = play
+    }
+
     override fun isConnected(): Boolean = true
 
     override fun isPlaying(): Boolean = playOnFocusGain || (exoPlayer?.playWhenReady ?: false)
@@ -132,17 +148,32 @@ class RadioPlayback(val context: Context, val url: String) : Playback {
     }
 
     override fun play() {
-
-
-        exoPlayer?.prepare(mediaSource)
-        exoPlayer?.playWhenReady = true
-
+        playOnFocusGain = true
+        tryToGetAudioFocus()
         registerAudioNoisyReceiver()
+
+        if (exoPlayer == null) {
+            releaseResources(false)
+
+            exoPlayer = ExoPlayerFactory.newSimpleInstance(context, trackSelector, loadControl)
+            exoPlayer?.addListener(playerCallback)
+
+            val audioAttributes = AudioAttributes.Builder()
+                    .setContentType(CONTENT_TYPE_MUSIC)
+                    .setUsage(USAGE_MEDIA)
+                    .build()
+            exoPlayer?.audioAttributes = audioAttributes
+
+            exoPlayer?.prepare(mediaSource)
+        }
+
+        configurePlayerState()
     }
 
     override fun pause() {
-        exoPlayer?.playWhenReady = false
+        setPlayWhenReady(false)
 
+        releaseResources(false)
         unregisterAudioNoisyReceiver()
     }
 
@@ -185,6 +216,12 @@ class RadioPlayback(val context: Context, val url: String) : Playback {
         }
     }
 
+    private fun giveUpAudioFocus() {
+        if (audioManager.abandonAudioFocus(mOnAudioFocusChangeListener) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            currentAudioFocusState = AUDIO_NO_FOCUS_NO_DUCK
+        }
+    }
+
     private fun tryToGetAudioFocus() {
         val result = audioManager.requestAudioFocus(
                 mOnAudioFocusChangeListener,
@@ -214,10 +251,25 @@ class RadioPlayback(val context: Context, val url: String) : Playback {
 
             // If we were playing when we lost focus, we need to resume playing.
             if (playOnFocusGain) {
-                exoPlayer?.playWhenReady = true
+                setPlayWhenReady(true)
                 playOnFocusGain = false
             }
         }
+    }
+
+    private fun releaseResources(releasePlayer: Boolean) {
+        // Stops and releases player (if requested and available).
+        if (releasePlayer && exoPlayer != null) {
+            exoPlayer?.release()
+            exoPlayer?.removeListener(playerCallback)
+            exoPlayer = null
+            exoPlayerNullIsStopped = true
+            playOnFocusGain = false
+        }
+
+//        if (mWifiLock.isHeld()) {
+//            mWifiLock.release()
+//        }
     }
 
     private fun registerAudioNoisyReceiver() {

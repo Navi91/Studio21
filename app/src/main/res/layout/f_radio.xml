@@ -10,6 +10,7 @@
     <ImageView
         android:layout_width="280dp"
         android:layout_height="76dp"
+        android:layout_marginTop="24dp"
         android:scaleType="fitCenter"
         app:srcCompat="@drawable/ic_logo" />
 
@@ -24,8 +25,8 @@
         android:layout_width="312dp"
         android:layout_height="36dp"
         android:layout_marginTop="24dp"
-        android:paddingRight="16dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingRight="16dp">
 
         <android.support.v7.widget.AppCompatSeekBar
             android:id="@+id/volume"
@@ -62,8 +63,8 @@
 
     <ImageView
         android:id="@+id/action"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:layout_marginTop="16dp"
         android:background="?selectableItemBackgroundBorderless"
         android:scaleType="centerInside"
