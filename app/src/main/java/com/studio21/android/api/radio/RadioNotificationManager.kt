@@ -90,6 +90,7 @@ class RadioNotificationManager(val service: RadioService) : BroadcastReceiver() 
                 val filter = IntentFilter()
                 filter.addAction(ACTION_PAUSE)
                 filter.addAction(ACTION_PLAY)
+                filter.addAction(ACTION_STOP)
                 service.registerReceiver(this, filter)
 
                 service.startForeground(NOTIFICATION_ID, notification)
@@ -121,6 +122,7 @@ class RadioNotificationManager(val service: RadioService) : BroadcastReceiver() 
         when (action) {
             ACTION_PAUSE -> transportControls?.pause()
             ACTION_PLAY -> transportControls?.play()
+            ACTION_STOP -> transportControls?.stop()
             else -> Logger.log(TAG, "Unknown intent ignored. Action=$action")
         }
     }
