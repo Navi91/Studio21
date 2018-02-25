@@ -2,10 +2,8 @@ package com.studio21.android.api
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
 import android.text.TextUtils
 import com.squareup.picasso.Picasso
-import com.squareup.picasso.Target
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
@@ -19,6 +17,10 @@ class ArtLoadRequest(val context: Context, val okHttpClient: OkHttpClient, val a
 
     private var isSubscribed = false;
 
+    companion object {
+        val imageHolderMap = mutableMapOf<String, Bitmap>()
+    }
+
     fun subscribe() {
         isSubscribed = true
 
@@ -31,6 +33,11 @@ class ArtLoadRequest(val context: Context, val okHttpClient: OkHttpClient, val a
 
     fun load() {
         if (!isSubscribed) return
+
+        if (imageHolderMap.containsKey(createTermWithAuthorAndSong())) {
+            notifyCallback(imageHolderMap.get(createTermWithAuthorAndSong()))
+            return
+        }
 
         loadWithTerm(createTermWithAuthorAndSong(), {
             loadWithTerm(createTermWithAuthor(), { notifyCallback(null) })
@@ -106,6 +113,10 @@ class ArtLoadRequest(val context: Context, val okHttpClient: OkHttpClient, val a
     private fun createTermWithAuthor() = author
 
     private fun notifyCallback(bitmap: Bitmap?) {
+        if (bitmap != null) {
+            imageHolderMap.put(createTermWithAuthorAndSong(), bitmap)
+        }
+
         if (isSubscribed) {
             callback.onLoad(bitmap)
         }

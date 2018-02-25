@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.RemoteException
@@ -21,10 +22,13 @@ import android.support.v4.media.app.NotificationCompat.MediaStyle
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.text.TextUtils
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import com.squareup.picasso.Target
 import com.studio21.android.R
+import com.studio21.android.api.ArtLoadRequest
+import com.studio21.android.api.ArtLoader
 import com.studio21.android.util.Logger
 import com.studio21.android.view.activity.RadioActivity
 
@@ -41,6 +45,8 @@ class RadioNotificationManager(val service: RadioService) : BroadcastReceiver() 
 
     private var playbackState: PlaybackStateCompat? = null
     private var metadata: MediaMetadataCompat? = null
+    private val artLoader = ArtLoader(service)
+    private var artLoadRequest: ArtLoadRequest? = null
 
     private val notificationManager: NotificationManager = service.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -97,6 +103,7 @@ class RadioNotificationManager(val service: RadioService) : BroadcastReceiver() 
             started = false
             controller?.unregisterCallback(mediaControllerCallback)
             try {
+                unsubscribeLoadRequest()
                 notificationManager.cancel(NOTIFICATION_ID)
                 service.unregisterReceiver(this)
             } catch (ex: IllegalArgumentException) {
@@ -171,7 +178,7 @@ class RadioNotificationManager(val service: RadioService) : BroadcastReceiver() 
             sessionToken = freshToken
             if (sessionToken != null) {
                 controller = MediaControllerCompat(service, sessionToken!!)
-                transportControls = controller?.getTransportControls()
+                transportControls = controller?.transportControls
 
                 if (started) {
                     controller?.registerCallback(mediaControllerCallback)
@@ -187,8 +194,15 @@ class RadioNotificationManager(val service: RadioService) : BroadcastReceiver() 
 
         val description = metadata?.description ?: return null
 
+        val author = description.title
+        val song = description.subtitle
+
+        if (TextUtils.isEmpty(author) || TextUtils.isEmpty(song)) return null
+
+        unsubscribeLoadRequest()
+
         var fetchArtUrl: String? = null
-        var art: Bitmap? = null
+        val art: Bitmap = BitmapFactory.decodeResource(service.resources, R.mipmap.ic_notification_placeholder)
         if (description.iconUri != null) {
             // This sample assumes the iconUri will be a valid URL formatted String, but
             // it can actually be any valid Android Uri formatted String.
@@ -228,9 +242,7 @@ class RadioNotificationManager(val service: RadioService) : BroadcastReceiver() 
                 .setLargeIcon(art)
 
         setNotificationPlaybackState(notificationBuilder)
-        if (fetchArtUrl != null) {
-            fetchBitmapFromURLAsync(fetchArtUrl, notificationBuilder)
-        }
+        fetchBitmapFromURLAsync(author.toString(), song.toString(), notificationBuilder)
 
         return notificationBuilder.build()
     }
@@ -253,6 +265,14 @@ class RadioNotificationManager(val service: RadioService) : BroadcastReceiver() 
         notificationBuilder.addAction(NotificationCompat.Action(icon, label, intent))
     }
 
+    private fun subscribeLoadRequest() {
+        artLoadRequest?.subscribe()
+    }
+
+    private fun unsubscribeLoadRequest() {
+        artLoadRequest?.unsubscribe()
+    }
+
     private fun setNotificationPlaybackState(builder: NotificationCompat.Builder) {
         if (playbackState == null || !started) {
             service.stopForeground(true)
@@ -262,33 +282,17 @@ class RadioNotificationManager(val service: RadioService) : BroadcastReceiver() 
         builder.setOngoing(playbackState?.state == PlaybackStateCompat.STATE_PLAYING)
     }
 
-    private fun fetchBitmapFromURLAsync(bitmapUrl: String,
-                                        builder: NotificationCompat.Builder) {
-        Picasso.with(service).load("").into(object : Target {
-            override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
+    private fun fetchBitmapFromURLAsync(author: String, song: String, builder: NotificationCompat.Builder) {
 
-            }
-
-            override fun onBitmapFailed(errorDrawable: Drawable?) {
-
-            }
-
-            override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
-
+        artLoadRequest = artLoader.request(author, song, object : ArtLoadRequest.LoadCallback {
+            override fun onLoad(bitmap: Bitmap?) {
+                if (bitmap != null) {
+                    builder.setLargeIcon(bitmap)
+                    notificationManager.notify(NOTIFICATION_ID, builder.build())
+                }
             }
         })
-        // TODO load img
-//        AlbumArtCache.getInstance().fetch(bitmapUrl, object : AlbumArtCache.FetchListener() {
-//            fun onFetched(artUrl: String, bitmap: Bitmap, icon: Bitmap) {
-//                if (mMetadata != null && mMetadata.getDescription().getIconUri() != null &&
-//                        mMetadata.getDescription().getIconUri()!!.toString() == artUrl) {
-//                    // If the media is still the same, update the notification:
-//                    builder.setLargeIcon(bitmap)
-//                    addActions(builder)
-//                    notificationManager.notify(NOTIFICATION_ID, builder.build())
-//                }
-//            }
-//        })
+        subscribeLoadRequest()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
