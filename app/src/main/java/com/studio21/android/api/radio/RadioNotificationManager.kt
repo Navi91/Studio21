@@ -201,21 +201,7 @@ class RadioNotificationManager(val service: RadioService) : BroadcastReceiver() 
 
         unsubscribeLoadRequest()
 
-        var fetchArtUrl: String? = null
         val art: Bitmap = BitmapFactory.decodeResource(service.resources, R.mipmap.ic_notification_placeholder)
-        if (description.iconUri != null) {
-            // This sample assumes the iconUri will be a valid URL formatted String, but
-            // it can actually be any valid Android Uri formatted String.
-            // async fetch the album art icon
-            val artUrl = description.iconUri.toString()
-//            art = AlbumArtCache.getInstance().getBigImage(artUrl)
-//            if (art == null) {
-//                fetchArtUrl = artUrl
-//                // use a placeholder art while the remote art is being downloaded
-//                art = BitmapFactory.decodeResource(service.resources,
-//                        R.drawable.ic_default_art)
-//            }
-        }
 
         // Notification channels are only supported on Android O+.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

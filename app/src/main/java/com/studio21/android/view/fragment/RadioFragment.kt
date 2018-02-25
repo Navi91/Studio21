@@ -151,7 +151,6 @@ class RadioFragment : Studio21Fragment() {
     }
 
     private fun onMetadataChanged(metadata: MediaMetadataCompat?) {
-
         if (activity == null || metadata == null) {
             return
         }
@@ -165,7 +164,12 @@ class RadioFragment : Studio21Fragment() {
         titleTextView.text = author
         subtitleTextView.text = song
 
-        loadImageRequest = artLoader.request(author.toString(), song.toString(), object : ArtLoadRequest.LoadCallback {
+
+        loadArtImage(author.toString(), song.toString())
+    }
+
+    private fun loadArtImage(author: String, song: String) {
+        loadImageRequest = artLoader.request(author, song, object : ArtLoadRequest.LoadCallback {
             override fun onLoad(bitmap: Bitmap?) {
                 if (bitmap != null) {
                     activity?.runOnUiThread({
@@ -174,6 +178,8 @@ class RadioFragment : Studio21Fragment() {
                 }
             }
         })
+
+        artImageView.setImageResource(R.mipmap.ic_art_placeholder)
         subscribeLoadRequest()
     }
 
