@@ -1,9 +1,11 @@
 package com.studio21.android.api.playback
 
+import android.os.Bundle
 import android.os.SystemClock
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.text.TextUtils
 import com.studio21.android.util.Logger
 
 /**
@@ -12,6 +14,24 @@ import com.studio21.android.util.Logger
 class PlaybackManager(val playback: Playback, private val serviceCallback: PlaybackServiceCallback) : Playback.Callback {
 
     val TAG = "playback_manager"
+
+    companion object {
+        const val VOLUME_CUSTOM_ACTION = "volume_custom_action"
+        private const val VOLUME_BUNDLE = "volume_bundle"
+
+        fun createVolumeArgs(volume: Float): Bundle {
+            val args = Bundle()
+            args.putFloat(VOLUME_BUNDLE, volume)
+
+            return args
+        }
+
+        fun getVolumeFromArgs(args: Bundle?): Float {
+            if (args == null) return 0F
+
+            return args.getFloat(VOLUME_BUNDLE, 0f)
+        }
+    }
 
     init {
         playback.setCallback(this)
@@ -32,6 +52,12 @@ class PlaybackManager(val playback: Playback, private val serviceCallback: Playb
 
         override fun onStop() {
             handleStopRequest(null)
+        }
+
+        override fun onCustomAction(action: String?, extras: Bundle?) {
+            if (TextUtils.equals(action, VOLUME_CUSTOM_ACTION) && extras != null) {
+                playback.volume = getVolumeFromArgs(extras)
+            }
         }
     }
 
@@ -92,6 +118,7 @@ class PlaybackManager(val playback: Playback, private val serviceCallback: Playb
         }
 
         stateBuilder.setState(state, position, 1.0f, SystemClock.elapsedRealtime())
+        stateBuilder.setExtras(createVolumeArgs(playback.volume))
 
         serviceCallback.onPlaybackStateUpdated(stateBuilder.build())
 

@@ -22,6 +22,7 @@ import com.google.android.exoplayer2.util.Util
 import com.studio21.android.api.icy.IcyDataSourceFactory
 import com.studio21.android.api.radio.RadioService
 import com.studio21.android.util.Logger
+import com.studio21.android.util.Preferences
 
 /**
  * Created by Dmitriy on 24.02.2018.
@@ -67,8 +68,6 @@ class RadioPlayback(private val context: Context, url: String) : Playback {
             }
 
             callback?.onError("ExoPlayer error " + what)
-
-            throw error!!.sourceException
         }
 
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
@@ -162,6 +161,7 @@ class RadioPlayback(private val context: Context, url: String) : Playback {
             releaseResources(false)
 
             exoPlayer = ExoPlayerFactory.newSimpleInstance(context, trackSelector, loadControl)
+            exoPlayer?.volume = Preferences.getVolume(context)
             exoPlayer?.addListener(playerCallback)
 
             val audioAttributes = AudioAttributes.Builder()
@@ -188,6 +188,14 @@ class RadioPlayback(private val context: Context, url: String) : Playback {
             registerAudioNoisyReceiver()
             exoPlayer?.seekTo(position)
         }
+    }
+
+    override fun setVolume(volume: Float) {
+        exoPlayer?.volume = volume
+    }
+
+    override fun getVolume(): Float {
+        return exoPlayer?.volume ?: 0f
     }
 
     override fun setCurrentMediaId(mediaId: String?) {
@@ -252,7 +260,7 @@ class RadioPlayback(private val context: Context, url: String) : Playback {
                 // We're permitted to play, but only if we 'duck', ie: play softly
                 exoPlayer?.volume = VOLUME_DUCK
             } else {
-                exoPlayer?.volume = VOLUME_NORMAL
+                exoPlayer?.volume = Preferences.getVolume(context)
             }
 
             // If we were playing when we lost focus, we need to resume playing.

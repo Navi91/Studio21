@@ -1,6 +1,8 @@
 package com.studio21.android.view.fragment
 
+import android.content.Context
 import android.graphics.Bitmap
+import android.media.AudioManager
 import android.os.Bundle
 import android.support.v4.content.ContextCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -19,6 +21,8 @@ import butterknife.OnClick
 import com.studio21.android.R
 import com.studio21.android.api.ArtLoadRequest
 import com.studio21.android.api.ArtLoader
+import com.studio21.android.api.playback.PlaybackManager
+import com.studio21.android.util.Preferences
 import com.studio21.android.view.Studio21Fragment
 
 class RadioFragment : Studio21Fragment() {
@@ -36,6 +40,8 @@ class RadioFragment : Studio21Fragment() {
 
     private var artUrl: String? = null
     private lateinit var artLoader: ArtLoader
+    private lateinit var audioManager: AudioManager
+    private var loadImageRequest: ArtLoadRequest? = null
 
     private val callback = object : MediaControllerCompat.Callback() {
         override fun onPlaybackStateChanged(state: PlaybackStateCompat) {
@@ -60,6 +66,7 @@ class RadioFragment : Studio21Fragment() {
         super.onCreate(savedInstanceState)
 
         artLoader = ArtLoader(activity!!)
+        audioManager = activity!!.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -69,6 +76,30 @@ class RadioFragment : Studio21Fragment() {
         butter(view)
 
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        invalidateVolumeSeekBar()
+
+        volumeSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+            }
+
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                Preferences.setVolume(activity!!, convertProgressToFloat(progress))
+                setVolumeMedia()
+            }
+        })
+    }
+
+    private fun invalidateVolumeSeekBar() {
+        volumeSeekBar.progress = convertProgressFromFloat(Preferences.getVolume(activity!!))
     }
 
     override fun onStart() {
@@ -129,7 +160,8 @@ class RadioFragment : Studio21Fragment() {
         when (state.state) {
             PlaybackStateCompat.STATE_PAUSED, PlaybackStateCompat.STATE_STOPPED, PlaybackStateCompat.STATE_NONE -> enablePlay = true
             PlaybackStateCompat.STATE_ERROR -> {
-                Toast.makeText(activity, state.errorMessage, Toast.LENGTH_LONG).show()
+                Toast.makeText(activity, R.string.error, Toast.LENGTH_LONG).show()
+                pauseMedia()
             }
         }
 
@@ -140,7 +172,9 @@ class RadioFragment : Studio21Fragment() {
         }
     }
 
-    private var loadImageRequest: ArtLoadRequest? = null
+    private fun convertProgressFromFloat(progress: Float): Int = (progress * 100).toInt()
+
+    private fun convertProgressToFloat(progress: Int): Float = progress.toFloat() / 100
 
     private fun subscribeLoadRequest() {
         loadImageRequest?.subscribe()
@@ -179,7 +213,7 @@ class RadioFragment : Studio21Fragment() {
             }
         })
 
-        artImageView.setImageResource(R.mipmap.ic_art_placeholder)
+        artImageView.setImageResource(R.mipmap.ic_notification_placeholder)
         subscribeLoadRequest()
     }
 
@@ -191,5 +225,10 @@ class RadioFragment : Studio21Fragment() {
     private fun pauseMedia() {
         val controller = MediaControllerCompat.getMediaController(activity!!)
         controller?.transportControls?.pause()
+    }
+
+    private fun setVolumeMedia() {
+        val controller = MediaControllerCompat.getMediaController(activity!!)
+        controller?.transportControls?.sendCustomAction(PlaybackManager.VOLUME_CUSTOM_ACTION, PlaybackManager.createVolumeArgs(Preferences.getVolume(activity!!)))
     }
 }

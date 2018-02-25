@@ -18,9 +18,9 @@
         android:id="@+id/art"
         android:layout_width="280dp"
         android:layout_height="280dp"
-        android:scaleType="fitCenter"
         android:layout_marginTop="16dp"
-        android:src="@mipmap/ic_art_placeholder" />
+        android:scaleType="fitCenter"
+        android:src="@mipmap/ic_notification_placeholder" />
 
     <LinearLayout
         android:layout_width="312dp"
@@ -34,8 +34,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:layout_weight="1"
-            android:progress="40" />
+            android:layout_weight="1" />
 
         <ImageView
             android:layout_width="32dp"
