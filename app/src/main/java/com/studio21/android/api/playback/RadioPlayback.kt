@@ -68,6 +68,7 @@ class RadioPlayback(private val context: Context, url: String) : Playback {
             }
 
             callback?.onError("ExoPlayer error " + what)
+            releaseResources(true)
         }
 
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {

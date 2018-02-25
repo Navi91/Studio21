@@ -2,6 +2,7 @@ package com.studio21.android.view.fragment
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Typeface
 import android.media.AudioManager
 import android.os.Bundle
 import android.support.v4.content.ContextCompat
@@ -24,6 +25,7 @@ import com.studio21.android.api.ArtLoader
 import com.studio21.android.api.playback.PlaybackManager
 import com.studio21.android.util.Preferences
 import com.studio21.android.view.Studio21Fragment
+
 
 class RadioFragment : Studio21Fragment() {
 
@@ -80,6 +82,10 @@ class RadioFragment : Studio21Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val typeface = Typeface.createFromAsset(activity!!.assets, "Montserrat-SemiBold.ttf")
+        titleTextView.setTypeface(typeface, Typeface.NORMAL)
+        subtitleTextView.setTypeface(typeface, Typeface.NORMAL)
 
         invalidateVolumeSeekBar()
 
