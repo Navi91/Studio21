@@ -9,6 +9,7 @@ import android.support.v4.content.ContextCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.support.v7.app.AppCompatDelegate
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
