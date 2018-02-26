@@ -9,7 +9,6 @@ import android.support.v4.content.ContextCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.support.v7.app.AppCompatDelegate
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -220,7 +219,7 @@ class RadioFragment : Studio21Fragment() {
             }
         })
 
-        artImageView.setImageResource(R.mipmap.ic_notification_placeholder)
+        artImageView.setImageDrawable(ContextCompat.getDrawable(activity!!, R.drawable.ic_logo_gray))
         subscribeLoadRequest()
     }
 
