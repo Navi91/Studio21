@@ -2,5 +2,9 @@
     <string name="app_name">Studio21</string>
 
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="notification_channel_name">Radio</string>
+    <string name="notification_channel_description">Studio21 notification</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="error">Error</string>
 </resources>
