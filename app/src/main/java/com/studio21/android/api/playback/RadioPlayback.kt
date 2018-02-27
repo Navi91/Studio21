@@ -100,10 +100,6 @@ class RadioPlayback(private val context: Context, url: String) : Playback {
     private var callback: Playback.Callback? = null
 
     companion object {
-        val VOLUME_DUCK = 0.2f
-        // The volume we set the media player when we have audio focus.
-        val VOLUME_NORMAL = 1.0f
-
         // we don't have audio focus, and can't duck (play at a low volume)
         private val AUDIO_NO_FOCUS_NO_DUCK = 0
         // we don't have focus, but can duck (play at a low volume)
@@ -259,7 +255,7 @@ class RadioPlayback(private val context: Context, url: String) : Playback {
 
             if (currentAudioFocusState == AUDIO_NO_FOCUS_CAN_DUCK) {
                 // We're permitted to play, but only if we 'duck', ie: play softly
-                exoPlayer?.volume = VOLUME_DUCK
+                exoPlayer?.volume = Preferences.getVolume(context) / 5
             } else {
                 exoPlayer?.volume = Preferences.getVolume(context)
             }
